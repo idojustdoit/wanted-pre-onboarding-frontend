@@ -1,53 +1,71 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import AxiosInstance from "../utils/AxiosInstance";
 
 function SignUp() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [signupValue, setSignupValue] = useState({ email: "", password: "" });
   const navigate = useNavigate();
+
+  const isValid =
+    signupValue.email.includes("@") && signupValue.password.length >= 8;
 
   const idHandler = (e) => {
     e.preventDefault();
-    setEmail(e.target.value);
+    setSignupValue((prev) => ({ ...prev, email: e.target.value }));
   };
 
   const pwHandler = (e) => {
     e.preventDefault();
-    setPassword(e.target.value);
+    setSignupValue((prev) => ({ ...prev, password: e.target.value }));
   };
 
-  const signUpApi = (e) => {
-    const config = {
-      email,
-      password,
-    };
-    axios
-      .post("/auth/signup", Headers:{
+  const signUpApi = () => {
+    const data = { email: signupValue.email, password: signupValue.password };
 
-      contentType: application/json}
-      
-      ,config)
+    AxiosInstance.post("/auth/signup", data)
       .then((res) => {
         console.log(res);
         navigate("/");
       })
       .catch((err) => {
         console.log(err);
-        alert("정보를 다시입력해주세요!");
+        alert(err.response.data.message);
       });
+  };
+
+  const handleOnKeyPress = (e) => {
+    if (e.key === "Enter") {
+      signUpApi();
+    }
   };
 
   return (
     <div>
       <span>email</span>
-      <input placeholder="이메일을 입력해주세요." onChange={idHandler} />
+      <input
+        placeholder="이메일을 입력해주세요."
+        type="email"
+        onChange={idHandler}
+      />
 
       <span>password</span>
-      <input placeholder="비밀번호를 입력해주세요." onChange={pwHandler} />
+      <input
+        placeholder="비밀번호를 입력해주세요."
+        type="password"
+        onChange={pwHandler}
+        onKeyPress={handleOnKeyPress}
+      />
 
-      <button>뒤로가기</button>
-      <button onClick={signUpApi}>회원가입 하기</button>
+      <button
+        onClick={() => {
+          navigate(-1);
+        }}
+      >
+        뒤로가기
+      </button>
+      <button onClick={signUpApi} disabled={!isValid}>
+        회원가입 하기
+      </button>
     </div>
   );
 }
